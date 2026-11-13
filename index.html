@@ -256,27 +256,27 @@ button.ghost:hover { background: rgba(255, 217, 138, .1); }
     <div class="lock" aria-hidden="true"><div class="ticks"></div><div class="keyhole"></div></div>
   </div>
 
-  <form id="form" autocomplete="off">
-    <label for="word">Masukkan kata kunci</label>
+  <form id="form" autocomplete="off" onsubmit="return false">
+    <label for="word">Masukkan PIN</label>
     <div class="row">
-      <input id="word" name="word" type="text" placeholder="ketik kata rahasia…" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+      <input id="word" name="word" type="text" inputmode="numeric" maxlength="12" placeholder="ketik PIN rahasia…" autocapitalize="off" autocorrect="off" spellcheck="false" required>
       <button type="submit" id="go">Buka</button>
     </div>
-    <p class="status"><span class="msg" id="msg" aria-live="polite">Pintu ini hanya terbuka untuk kata yang benar.</span><span class="count" id="count">Percobaan: 0</span></p>
+    <p class="status"><span class="msg" id="msg" aria-live="polite">Pintu ini hanya terbuka untuk PIN yang benar.</span><span class="count" id="count">Percobaan: 0</span></p>
   </form>
 </div>
 
 <script>
 (() => {
   // Only the SHA-256 of the secret word is stored, so it can't be read from the page source.
-  const SECRET_HASH = "5e4c9814dcc8e8dcaab18ea6eddb70a325ae3e11d1fb1e639d55703c1df762bc";
+  const SECRET_HASH = "e1fc72b4d465a7d03830afe06cb7f2a49f5be2cf26158a44dd9849882830f0bb";
   const $ = (id) => document.getElementById(id);
   const stage = $("stage"), room = $("room"), form = $("form"), input = $("word"),
         msg = $("msg"), count = $("count"), app = $("app");
   let tries = 0;
 
   const wrongLines = [
-    "Kata salah. Pintu tetap terkunci.",
+    "PIN salah. Pintu tetap terkunci.",
     "Masih salah. Coba lagi.",
     "Belum tepat. Jangan menyerah.",
     "Kuncinya tidak bergerak. Pikirkan lagi."
@@ -337,7 +337,7 @@ button.ghost:hover { background: rgba(255, 217, 138, .1); }
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const guess = input.value.toLowerCase().replace(/\s+/g, "");
-    if (!guess) { setMsg("Ketik kata kuncinya dulu.", "bad"); input.focus(); return; }
+    if (!guess) { setMsg("Ketik PIN-nya dulu.", "bad"); input.focus(); return; }
     tries++;
     count.textContent = "Percobaan: " + tries;
 
