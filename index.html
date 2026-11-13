@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+<title>Secret Room</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unica+One&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-screen stage — a riveted iron double door with a brass lock; the passphrase console sits below it. Single dark world by choice. */
+:root {
+  color-scheme: dark;
+  --bg: #0c1113;
+  --iron: #263035;
+  --iron-hi: #37444a;
+  --iron-lo: #161d20;
+  --brass: #c9a24a;
+  --glow: #ffd98a;
+  --fg: #e7e1d3;
+  --muted: #8d9592;
+  --danger: #ef6b5b;
+  --ok: #8fd6a4;
+  --font-display: "Unica One", "Arial Narrow", Impact, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+html, body { height: 100%; }
+body {
+  background: radial-gradient(120% 80% at 50% 0%, #17211f 0%, var(--bg) 60%) var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap {
+  min-height: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  padding-block: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  box-sizing: border-box;
+}
+header { text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(38px, 11vw, 54px);
+  line-height: 1;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+/* ---------- The door ---------- */
+.stage {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 10px 10px 4px 4px;
+  overflow: hidden;
+  perspective: 1200px;
+  background: #050707;
+  box-shadow: 0 0 0 10px #1b2225, 0 0 0 12px #0a0e0f, 0 30px 60px -20px #000;
+}
+.room {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: safe center;
+  gap: 12px; padding: 20px; text-align: center; overflow-y: auto;
+  container-type: inline-size;
+  background:
+    radial-gradient(60% 45% at 50% 38%, rgba(255, 217, 138, .55), rgba(255, 217, 138, 0) 70%),
+    linear-gradient(#1d1710, #0b0906);
+  opacity: 0;
+  transition: opacity .6s ease .5s;
+}
+.room .star {
+  width: 52px; height: 52px; flex: none;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--glow);
+  color: #2a1d06;
+  font-family: var(--font-display);
+  font-size: 30px;
+  box-shadow: 0 0 40px 10px rgba(255, 217, 138, .45);
+}
+.room h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(26px, 11cqi, 42px);
+  line-height: 1.05;
+  letter-spacing: .04em;
+  color: var(--glow);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.room p { margin: 0; color: #e9dcc0; max-width: 28ch; font-size: 14px; }
+.room button { white-space: nowrap; min-height: 42px; font-size: 13px; }
+
+.door {
+  position: absolute; top: 0; bottom: 0; width: 50%;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 58px, rgba(0,0,0,.35) 58px 60px),
+    linear-gradient(90deg, var(--iron-lo), var(--iron) 30%, var(--iron-hi) 55%, var(--iron) 80%, var(--iron-lo));
+  transition: transform 1.1s cubic-bezier(.7, 0, .25, 1);
+  z-index: 2;
+}
+.door::before {               /* rivets */
+  content: ""; position: absolute; inset: 14px;
+  background-image: radial-gradient(circle, #56656b 0 3px, #11171a 3.5px, transparent 4.5px);
+  background-size: 100% 60px;
+  background-repeat: repeat-y;
+  background-position: 0 6px;
+  -webkit-mask: linear-gradient(90deg, #000 0 14px, transparent 14px calc(100% - 14px), #000 calc(100% - 14px));
+          mask: linear-gradient(90deg, #000 0 14px, transparent 14px calc(100% - 14px), #000 calc(100% - 14px));
+}
+.door.left  { left: 0;  transform-origin: left center;  border-right: 1px solid #070a0b; }
+.door.right { right: 0; transform-origin: right center; border-left: 1px solid #4a585e; }
+
+.lock {
+  position: absolute; left: 50%; top: 50%;
+  width: 34%; aspect-ratio: 1; max-width: 100%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 3;
+  background: radial-gradient(circle at 35% 30%, #f1d48a, var(--brass) 45%, #6e5420 100%);
+  box-shadow: 0 0 0 6px #12181a, 0 10px 30px rgba(0,0,0,.6), inset 0 0 0 10px rgba(0,0,0,.18);
+  display: grid; place-items: center;
+  transition: transform .7s ease, opacity .4s ease .35s;
+}
+.lock .ticks {
+  position: absolute; inset: 9%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(40, 28, 6, .7) 0 2deg, transparent 2deg 15deg);
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%);
+          mask: radial-gradient(circle, transparent 62%, #000 63%);
+}
+.keyhole {
+  position: relative; width: 16%; height: 34%;
+}
+.keyhole::before, .keyhole::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); background: #120d04; }
+.keyhole::before { top: 0; width: 100%; aspect-ratio: 1; border-radius: 50%; }
+.keyhole::after  { top: 40%; width: 46%; height: 60%; clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%); }
+
+/* states */
+.stage.denied .lock { animation: shake .45s; }
+.stage.denied .keyhole::before, .stage.denied .keyhole::after { background: var(--danger); box-shadow: 0 0 12px var(--danger); }
+.stage.open .lock { transform: translate(-50%, -50%) rotate(200deg); opacity: 0; }
+.stage.open .door.left  { transform: rotateY(-100deg); transition-delay: .45s; }
+.stage.open .door.right { transform: rotateY(100deg);  transition-delay: .45s; }
+.stage.open .room { opacity: 1; }
+
+@keyframes shake {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0); }
+  20% { transform: translate(-58%, -50%) rotate(-8deg); }
+  40% { transform: translate(-43%, -50%) rotate(6deg); }
+  60% { transform: translate(-55%, -50%) rotate(-4deg); }
+  80% { transform: translate(-47%, -50%) rotate(2deg); }
+}
+
+/* ---------- Console ---------- */
+form { display: flex; flex-direction: column; gap: 10px; }
+label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.row { display: flex; gap: 8px; }
+input {
+  flex: 1; min-width: 0;
+  font: 600 18px/1 var(--font-mono);
+  letter-spacing: .12em;
+  color: var(--fg);
+  background: #0a0e0f;
+  border: 1px solid #2c373b;
+  border-radius: 6px;
+  padding: 14px 14px;
+  outline: none;
+}
+input::placeholder { color: #4d5856; letter-spacing: .06em; font-weight: 400; }
+input:focus-visible { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(201, 162, 74, .25); }
+button {
+  font: 600 14px/1 var(--font-body);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #1e1606;
+  background: var(--brass);
+  border: 0;
+  border-radius: 6px;
+  padding: 0 20px;
+  cursor: pointer;
+  min-height: 48px;
+}
+button:hover { background: #d8b35d; }
+button:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+button.ghost {
+  background: transparent; color: var(--glow);
+  border: 1px solid rgba(255, 217, 138, .5);
+  padding: 0 18px;
+}
+button.ghost:hover { background: rgba(255, 217, 138, .1); }
+
+.status {
+  min-height: 1.5em;
+  margin: 0;
+  font-size: 14px;
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.status .msg { color: var(--muted); }
+.status .msg.bad { color: var(--danger); }
+.status .msg.good { color: var(--ok); }
+.status .count { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.is-open form .row { opacity: .4; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .door, .lock, .room { transition-duration: .01s !important; transition-delay: 0s !important; }
+  .stage.denied .lock { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  <header>
+    <span class="eyebrow">Ruang Rahasia · Terkunci</span>
+    <h1>Secret Room</h1>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="room" id="room" inert aria-hidden="true">
+      <div class="star" aria-hidden="true">✓</div>
+      <h2>Selamat, kamu berhasil!</h2>
+      <p>Pintu terbuka. Kamu sudah masuk ke ruang rahasia.</p>
+      <button type="button" class="ghost" id="relock">Kunci pintu lagi</button>
+    </div>
+    <div class="door left" aria-hidden="true"></div>
+    <div class="door right" aria-hidden="true"></div>
+    <div class="lock" aria-hidden="true"><div class="ticks"></div><div class="keyhole"></div></div>
+  </div>
+
+  <form id="form" autocomplete="off">
+    <label for="word">Masukkan kata kunci</label>
+    <div class="row">
+      <input id="word" name="word" type="text" placeholder="ketik kata rahasia…" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+      <button type="submit" id="go">Buka</button>
+    </div>
+    <p class="status"><span class="msg" id="msg" aria-live="polite">Pintu ini hanya terbuka untuk kata yang benar.</span><span class="count" id="count">Percobaan: 0</span></p>
+  </form>
+</div>
+
+<script>
+(() => {
+  // Only the SHA-256 of the secret word is stored, so it can't be read from the page source.
+  const SECRET_HASH = "5e4c9814dcc8e8dcaab18ea6eddb70a325ae3e11d1fb1e639d55703c1df762bc";
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage"), room = $("room"), form = $("form"), input = $("word"),
+        msg = $("msg"), count = $("count"), app = $("app");
+  let tries = 0;
+
+  const wrongLines = [
+    "Kata salah. Pintu tetap terkunci.",
+    "Masih salah. Coba lagi.",
+    "Belum tepat. Jangan menyerah.",
+    "Kuncinya tidak bergerak. Pikirkan lagi."
+  ];
+
+  const hex = (bytes) => [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
+
+  // Plain-JS SHA-256 for pages where crypto.subtle is unavailable (non-secure contexts).
+  function sha256Fallback(bytes) {
+    const K = [], H = [];
+    let n = 2, found = 0;
+    const frac = (x) => ((x - Math.floor(x)) * 4294967296) >>> 0;
+    while (found < 64) {
+      let prime = true;
+      for (let d = 2; d * d <= n; d++) if (n % d === 0) { prime = false; break; }
+      if (prime) { if (found < 8) H[found] = frac(Math.sqrt(n)); K[found++] = frac(Math.cbrt(n)); }
+      n++;
+    }
+    const len = bytes.length, total = ((len + 9 + 63) >> 6) << 6;
+    const m = new Uint8Array(total); m.set(bytes); m[len] = 0x80;
+    const dv = new DataView(m.buffer);
+    dv.setUint32(total - 4, len * 8); dv.setUint32(total - 8, Math.floor(len / 536870912));
+    const rotr = (x, r) => (x >>> r) | (x << (32 - r));
+    const W = new Uint32Array(64);
+    for (let off = 0; off < total; off += 64) {
+      for (let i = 0; i < 16; i++) W[i] = dv.getUint32(off + i * 4);
+      for (let i = 16; i < 64; i++) {
+        const s0 = rotr(W[i-15], 7) ^ rotr(W[i-15], 18) ^ (W[i-15] >>> 3);
+        const s1 = rotr(W[i-2], 17) ^ rotr(W[i-2], 19) ^ (W[i-2] >>> 10);
+        W[i] = (W[i-16] + s0 + W[i-7] + s1) >>> 0;
+      }
+      let [a, b, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) {
+        const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + W[i]) >>> 0;
+        const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+        h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+      }
+      [a, b, c, d, e, f, g, h].forEach((v, i) => { H[i] = (H[i] + v) >>> 0; });
+    }
+    const out = new Uint8Array(32), odv = new DataView(out.buffer);
+    H.forEach((v, i) => odv.setUint32(i * 4, v));
+    return hex(out);
+  }
+
+  async function sha256(text) {
+    const bytes = new TextEncoder().encode(text);
+    try {
+      if (window.crypto && crypto.subtle) return hex(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)));
+    } catch (_) { /* fall through */ }
+    return sha256Fallback(bytes);
+  }
+
+  function setMsg(text, kind) {
+    msg.textContent = text;
+    msg.className = "msg" + (kind ? " " + kind : "");
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const guess = input.value.toLowerCase().replace(/\s+/g, "");
+    if (!guess) { setMsg("Ketik kata kuncinya dulu.", "bad"); input.focus(); return; }
+    tries++;
+    count.textContent = "Percobaan: " + tries;
+
+    if (await sha256(guess) === SECRET_HASH) {
+      setMsg("Kunci terbuka!", "good");
+      stage.classList.remove("denied");
+      stage.classList.add("open");
+      app.classList.add("is-open");
+      room.inert = false;
+      room.removeAttribute("aria-hidden");
+      input.blur();
+      setTimeout(() => $("relock").focus({ preventScroll: true }), 1400);
+    } else {
+      setMsg(wrongLines[(tries - 1) % wrongLines.length], "bad");
+      stage.classList.remove("denied");
+      void stage.offsetWidth;            // restart the shake animation
+      stage.classList.add("denied");
+      input.select();
+    }
+  });
+
+  $("relock").addEventListener("click", () => {
+    stage.classList.remove("open", "denied");
+    app.classList.remove("is-open");
+    room.inert = true;
+    room.setAttribute("aria-hidden", "true");
+    input.value = "";
+    tries = 0;
+    count.textContent = "Percobaan: 0";
+    setMsg("Pintu terkunci lagi. Siap untuk pemain berikutnya.");
+    input.focus();
+  });
+})();
+</script>
+</body>
+</html>
